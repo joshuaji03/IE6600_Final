@@ -1,0 +1,62 @@
+---
+title: "IE6600 - hw1"
+author: "Joshua Ji"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+# echo=T to show the code, eval=T to show the results ----
+knitr::opts_chunk$set(echo = T, eval=T) 
+# Pre-load packages ----
+library(tidyverse)
+update.packages("rlang")
+```
+
+```{R}
+# upload morality data
+df_1 <- read_csv('Data/Morticd10_part1.csv')
+df_2 <- read_csv('Data/Morticd10_part2.csv')
+df_3 <- read_csv('Data/Morticd10_part3.csv')
+df_4 <- read_csv('Data/Morticd10_part4.csv')
+df_5 <- read_csv('Data/Morticd10_part5.csv')
+```
+
+```{R}
+# combine all 5 morality datasets
+df <- rbind(df_1, df_2, df_3, df_4, df_5)
+```
+
+```{R}
+# upload country name with country code
+file <- "Data/country_codes.csv"
+country <- read.table(file, header = TRUE, sep = ",")
+country <- separate(data = pop, col = country.name, 
+                    into = c("code", "country_name"), sep = "\\,")
+```
+```{R}
+# upload Population and live births data (see documentation about more details)
+file <- "Data/pop.csv"
+nameLine <- readLines(con=file, n=1)
+nameLine <- make.names(unlist(strsplit(nameLine,",")))
+pop <- read.table(file, header = TRUE, sep = ",")
+pop <- separate(data = pop, col = colnames(pop), 
+                into = nameLine, sep = "\\,")
+pop %>%
+  rename(Country = X.Country,
+         Lb = Lb.)
+```
+
+```{R}
+# only execute once, write the note file from WHO into readable .csv file
+# write notes
+file <- "notes.csv"
+nameLine <- readLines(con=file, n=1)
+nameLine <- make.names(unlist(strsplit(nameLine,",")))
+notes <- read.csv(file, header = TRUE, sep = ",")
+notes <- separate(data = notes, col = colnames(notes), 
+                into = nameLine, sep = "\\,")
+write.csv(notes,"notes.csv", row.names = FALSE)
+```
+
+
+
