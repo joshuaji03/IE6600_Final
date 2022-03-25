@@ -1,4 +1,3 @@
----
 title: "IE6600 - hw1"
 author: "Joshua Ji"
 output: pdf_document
@@ -30,7 +29,7 @@ df <- rbind(df_1, df_2, df_3, df_4, df_5)
 # upload country name with country code
 file <- "Data/country_codes.csv"
 country <- read.table(file, header = TRUE, sep = ",")
-country <- separate(data = pop, col = country.name, 
+country <- separate(data = country, col = country.name, 
                     into = c("code", "country_name"), sep = "\\,")
 ```
 ```{R}
@@ -49,7 +48,7 @@ pop %>%
 ```{R}
 # only execute once, write the note file from WHO into readable .csv file
 # write notes
-file <- "notes.csv"
+file <- "Notes/notes.csv"
 nameLine <- readLines(con=file, n=1)
 nameLine <- make.names(unlist(strsplit(nameLine,",")))
 notes <- read.csv(file, header = TRUE, sep = ",")
