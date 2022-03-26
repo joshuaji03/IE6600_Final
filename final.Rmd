@@ -8,7 +8,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = T, eval=T) 
 # Pre-load packages ----
 library(tidyverse)
-update.packages("rlang")
+# install.packages("sqldf") run once
+library(sqldf)
 ```
 
 ```{R}
@@ -68,4 +69,12 @@ pop %>%
 file <- "Data/age_ref.csv"
 age_ref <- read_csv(file)
 age_ref <- head(age_ref, 10)
+```
+
+```{R}
+# temp table that combines country name table to population table
+temp <- sqldf("SELECT *
+              FROM country df1, pop df2
+              WHERE df1.code = df2.Country
+              ")
 ```
