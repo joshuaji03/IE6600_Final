@@ -40,7 +40,7 @@ nameLine <- make.names(unlist(strsplit(nameLine,",")))
 pop <- read.table(file, header = TRUE, sep = ",")
 pop <- separate(data = pop, col = colnames(pop), 
                 into = nameLine, sep = "\\,")
-pop %>%
+pop <- pop %>%
   rename(Country = X.Country,
          Lb = Lb.)
 ```
@@ -58,4 +58,14 @@ write.csv(notes,"notes.csv", row.names = FALSE)
 ```
 
 
+```{R}
+# check what age formats exist in the df
+pop %>%
+  group_by(Frmat) %>%
+  summarise(n = n())
 
+# read age reference table into R
+file <- "Data/age_ref.csv"
+age_ref <- read_csv(file)
+age_ref <- head(age_ref, 10)
+```
