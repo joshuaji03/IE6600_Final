@@ -14,7 +14,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Year",
                       label="Year:",
-                      choices = df$Year,
+                      choices = c("All",unique(FinalData$Year),
                       selected = NULL
                     ),
                     
@@ -22,7 +22,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Country",
                       label="Country:",
-                      choices = df$Country,
+                      choices = c("All",unique(FinalData$Country),
                       selected = NULL
                     ),
                     
@@ -30,7 +30,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Disease",
                       label="Disease:",
-                      choices = df$Cause
+                      choices = c("All",unique(FinalData$`Cause.Specifics`)
                     ),
                     
                     uiOutput("obs1"),
@@ -52,4 +52,5 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                              height = "300px"
                            ))
                   )))
-                ))
+                )))))
+
