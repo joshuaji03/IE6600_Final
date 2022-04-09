@@ -1,17 +1,55 @@
 library(shiny)
+library(tidyverse)
+library(plotly)
+library(DT)
+library(shinyWidgets)
 
-ui <- fluidPage(
-  titlePanel("Hello Shiny!"),
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput(inputId = "bins",
-                 label = "Number of bins:",
-                 min = 1,
-                 max = 50,
-                 value = 30)
-    ),
-    mainPanel(
-      plotOutput(outputId = "distPlot")
-    )
-  )
-)
+ui <- fluidPage(titlePanel("Group 7 Project"),
+                sidebarLayout(
+                  sidebarPanel(
+                    width = 2,
+                    helpText("Visulization based on WHO dataset"),
+                    
+                    selectInput(
+                      width="100%",
+                      inputId = "Year",
+                      label="Year:",
+                      choices = df$Year,
+                      selected = NULL
+                    ),
+                    
+                    selectInput(
+                      width="100%",
+                      inputId = "Country",
+                      label="Country:",
+                      choices = df$Country,
+                      selected = NULL
+                    ),
+                    
+                    selectInput(
+                      width="100%",
+                      inputId = "Disease",
+                      label="Disease:",
+                      choices = df$Cause
+                    ),
+                    
+                    uiOutput("obs1"),
+                    actionButton(
+                      inputId = "reset",
+                      label = "Reset Data",
+                      icon = icon("refresh"),
+                      width = "100%"
+                    ),
+                    verbatimTextOutput("aaa")
+                  ),
+                  mainPanel(fluidPage(fluidRow(
+                    column(6,
+                           DT::dataTableOutput("dataSet")),
+                    column(6,
+                           plotOutput(
+                             "plotChart",
+                             width = "100%",
+                             height = "300px"
+                           ))
+                  )))
+                ))
