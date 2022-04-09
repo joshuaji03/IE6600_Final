@@ -4,6 +4,11 @@ library(plotly)
 library(DT)
 library(shinyWidgets)
 
+df <- read_csv('/Users/yixuanji/Desktop/FinalData.csv')
+year <- c(unique(df$Year))
+country <- c(unique(df$Country))
+cause <- c(unique(df$Cause))
+
 ui <- fluidPage(titlePanel("Group 7 Project"),
                 sidebarLayout(
                   sidebarPanel(
@@ -14,7 +19,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Year",
                       label="Year:",
-                      choices = df$Year,
+                      choices = year,
                       selected = NULL
                     ),
                     
@@ -22,7 +27,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Country",
                       label="Country:",
-                      choices = df$Country,
+                      choices = country,
                       selected = NULL
                     ),
                     
@@ -30,7 +35,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Disease",
                       label="Disease:",
-                      choices = df$Cause
+                      choices = cause
                     ),
                     
                     uiOutput("obs1"),
