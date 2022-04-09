@@ -19,7 +19,11 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Year",
                       label="Year:",
+<<<<<<< HEAD
                       choices = year,
+=======
+                      choices = c("All",unique(FinalData$Year),
+>>>>>>> 7937a905e760e3677d14e26c66a33816ac26e640
                       selected = NULL
                     ),
                     
@@ -27,7 +31,11 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Country",
                       label="Country:",
+<<<<<<< HEAD
                       choices = country,
+=======
+                      choices = c("All",unique(FinalData$Country),
+>>>>>>> 7937a905e760e3677d14e26c66a33816ac26e640
                       selected = NULL
                     ),
                     
@@ -35,7 +43,11 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Disease",
                       label="Disease:",
+<<<<<<< HEAD
                       choices = cause
+=======
+                      choices = c("All",unique(FinalData$`Cause.Specifics`)
+>>>>>>> 7937a905e760e3677d14e26c66a33816ac26e640
                     ),
                     
                     uiOutput("obs1"),
@@ -57,4 +69,5 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                              height = "300px"
                            ))
                   )))
-                ))
+                )))))
+
