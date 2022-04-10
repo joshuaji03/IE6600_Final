@@ -14,27 +14,28 @@ library(sqldf)
 ```
 
 ```{R}
-FinalData_top_100 <- df %>% 
-  group_by("Cause_Specifics") %>%
-  summarise(sum(Deaths1))
+FinalData_top_30 <- df[c("Cause","Deaths1")] %>% 
+  group_by(Cause) %>%
+  summarise(total = sum(Deaths1)) %>%
+  arrange(desc(total)) %>%
+  top_n(30)
+
+temp <- merge(x = df, y = FinalData_top_30, by = "Cause", all.y = TRUE)
+
+final_df <- sqldf("SELECT *
+              FROM country df1, temp df2
+              WHERE df1.code = df2.Country
+              ")
+names(final_df)[names(final_df) == "...1"] <- "Total_deaths"
 
 
-#FinalData_top_100 <- aggregate(df$Deaths1, list(df$Cause_Specifics), FUN=sum)
-```
+final_df <- final_df[, !names(final_df) %in% c("Total_deaths", "code", "Cause",
+                                               "total", "list", "Admin1", "SubDiv")]
+
+final_df["country_name"][final_df["country_name"] == "\"Serbia and Montenegro"] <- "Serbia and Montenegro"
+final_df["country_name"][final_df["country_name"] == "\"United Kingdom"] <- "United Kingdom"
 
 
-```{R}
-# upload morality data
-df_1 <- read_csv('Data/Morticd10_part1.csv')
-df_2 <- read_csv('Data/Morticd10_part2.csv')
-df_3 <- read_csv('Data/Morticd10_part3.csv')
-df_4 <- read_csv('Data/Morticd10_part4.csv')
-df_5 <- read_csv('Data/Morticd10_part5.csv')
-```
-
-```{R}
-# combine all 5 morality datasets
-df <- rbind(df_1, df_2, df_3, df_4, df_5)
 ```
 
 ```{R}
@@ -52,9 +53,8 @@ nameLine <- make.names(unlist(strsplit(nameLine,",")))
 pop <- read.table(file, header = TRUE, sep = ",")
 pop <- separate(data = pop, col = colnames(pop), 
                 into = nameLine, sep = "\\,")
-pop <- pop %>%
-  rename(Country = X.Country,
-         Lb = Lb.)
+names(pop)[names(pop) == "X.Country"] <- "Country"
+names(pop)[names(pop) == "Lb."] <- "Lb"
 ```
 
 ```{R}
@@ -79,7 +79,7 @@ pop %>%
 # read age reference table into R
 file <- "Data/age_ref.csv"
 age_ref <- read_csv(file)
-age_ref <- head(age_ref, 10)
+age_ref <- head(age_ref, 10) jt
 ```
 
 ```{R}
@@ -89,3 +89,13 @@ temp <- sqldf("SELECT *
               WHERE df1.code = df2.Country
               ")
 ```
+
+```{R}
+
+
+
+
+
+
+```
+

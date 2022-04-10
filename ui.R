@@ -4,15 +4,18 @@ library(plotly)
 library(DT)
 library(shinyWidgets)
 
-df <- read_csv('/Users/yixuanji/Desktop/FinalData.csv')
-year <- c(unique(df$Year))
-country <- c(unique(df$Country))
-cause <- c(unique(df$Cause))
+#df <- read_csv('/Users/yixuanji/Desktop/FinalData.csv')
+
+#names(df)[names(df) == "Cause Specifics"] <- "Cause_Specifics"
+
+year <- sort(c(unique(final_df$Year)), decreasing = TRUE)
+country <- sort(c(unique(final_df$country_name)))
+cause <- sort(c(unique(final_df$Cause_Specifics)))
 
 ui <- fluidPage(titlePanel("Group 7 Project"),
                 sidebarLayout(
                   sidebarPanel(
-                    width = 2,
+                    width = 4,
                     helpText("Visulization based on WHO dataset"),
                     
                     selectInput(
@@ -47,7 +50,14 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                     ),
                     verbatimTextOutput("aaa")
                   ),
-                  mainPanel(fluidPage(fluidRow(
+                  mainPanel(
+                    tabsetPanel(
+                      tabPanel("Plot",plotOutput("plot")),
+                      tabPanel("Summary",verbatimTextOutput("summary")),
+                      tabPanel("Table",tableOutput("table"))
+                    ),
+                    
+                    fluidPage(fluidRow(
                     column(6,
                            DT::dataTableOutput("dataSet")),
                     column(6,
