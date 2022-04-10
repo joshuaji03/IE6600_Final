@@ -47,7 +47,7 @@ map_disease <- function(caus) {
 
 server <- function(input, output) {
   country_map <- reactive({
-#    map_disease(input$Disease)
+    
   })
   
   observe({
