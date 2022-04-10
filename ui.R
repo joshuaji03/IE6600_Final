@@ -3,13 +3,14 @@ library(tidyverse)
 library(plotly)
 library(DT)
 library(shinyWidgets)
+library(RColorBrewer)
+library(leaflet)
+library(rgdal)
 
-#df <- read_csv('/Users/yixuanji/Desktop/FinalData.csv')
-
-#names(df)[names(df) == "Cause Specifics"] <- "Cause_Specifics"
+final_df <- read_csv('/Users/yixuanji/Desktop/Northeastern/IE\ 6600/IE6600_Final/Data/final_df.csv')
 
 year <- sort(c(unique(final_df$Year)), decreasing = TRUE)
-country <- sort(c(unique(final_df$country_name)))
+cname <- sort(c(unique(final_df$country_name)))
 cause <- sort(c(unique(final_df$Cause_Specifics)))
 
 ui <- fluidPage(titlePanel("Group 7 Project"),
@@ -30,7 +31,7 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       width="100%",
                       inputId = "Country",
                       label="Country:",
-                      choices = country,
+                      choices = cname,
                       selected = NULL
                     ),
                     
@@ -40,8 +41,6 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                       label="Disease:",
                       choices = cause
                     ),
-                    
-                    uiOutput("obs1"),
                     actionButton(
                       inputId = "reset",
                       label = "Reset Data",
@@ -52,18 +51,21 @@ ui <- fluidPage(titlePanel("Group 7 Project"),
                   ),
                   mainPanel(
                     tabsetPanel(
-                      tabPanel("Plot",plotOutput("plot")),
-                      tabPanel("Summary",verbatimTextOutput("summary")),
+                      tabPanel("Plot",
+                               plotOutput(
+                                 "plotmap",
+                                 width = "150%",
+                                 height = "300px"
+                                 )
+                               ),
+                      tabPanel("Map",leafletOutput("mymap")),
                       tabPanel("Table",tableOutput("table"))
                     ),
-                    
                     fluidPage(fluidRow(
                     column(6,
-                           DT::dataTableOutput("dataSet")),
-                    column(6,
                            plotOutput(
-                             "plotChart",
-                             width = "100%",
+                             "plotmap_2",
+                             width = "150%",
                              height = "300px"
                            ))
                   )))

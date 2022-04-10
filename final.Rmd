@@ -8,12 +8,12 @@ output: pdf_document
 knitr::opts_chunk$set(echo = T, eval=T) 
 # Pre-load packages ----
 library(tidyverse)
-# install.packages("sqldf") run once
 library(sqldf)
-#Hello
 ```
 
 ```{R}
+# manipulate dataframe to final dataframe
+# !!!!!!!!!!!!no need to run, just for reference!!!!!!!!!!!!!!!!!!!!!!
 FinalData_top_30 <- df[c("Cause","Deaths1")] %>% 
   group_by(Cause) %>%
   summarise(total = sum(Deaths1)) %>%
@@ -22,12 +22,17 @@ FinalData_top_30 <- df[c("Cause","Deaths1")] %>%
 
 temp <- merge(x = df, y = FinalData_top_30, by = "Cause", all.y = TRUE)
 
-final_df <- sqldf("SELECT *
-              FROM country df1, temp df2
-              WHERE df1.code = df2.Country
+final_df <- read_csv("Data/final_df.csv")
+
+temp <- sqldf("SELECT *
+              FROM country df1, final_df df2
+              WHERE df1.country_name = df2.country_name
               ")
+final_df <- temp[ -c(1,2)]
+
 names(final_df)[names(final_df) == "...1"] <- "Total_deaths"
 
+final_df<- final_df[!(final_df$country_name=="Rodrigues"),]
 
 final_df <- final_df[, !names(final_df) %in% c("Total_deaths", "code", "Cause",
                                                "total", "list", "Admin1", "SubDiv")]
@@ -35,7 +40,7 @@ final_df <- final_df[, !names(final_df) %in% c("Total_deaths", "code", "Cause",
 final_df["country_name"][final_df["country_name"] == "\"Serbia and Montenegro"] <- "Serbia and Montenegro"
 final_df["country_name"][final_df["country_name"] == "\"United Kingdom"] <- "United Kingdom"
 
-
+write.csv(final_df,"final_df.csv", row.names = FALSE)
 ```
 
 ```{R}
@@ -44,7 +49,12 @@ file <- "Data/country_codes.csv"
 country <- read.table(file, header = TRUE, sep = ",")
 country <- separate(data = country, col = country.name, 
                     into = c("code", "country_name"), sep = "\\,")
+
+country <- read_csv("Data/country.csv")
+
+
 ```
+
 ```{R}
 # upload Population and live births data (see documentation about more details)
 file <- "Data/pop.csv"
@@ -91,11 +101,90 @@ temp <- sqldf("SELECT *
 ```
 
 ```{R}
+#reference https://r-graph-gallery.com/183-choropleth-map-with-leaflet.html
+#install.packages("leaflet")
+#install.packages("rgdal")
+library(RColorBrewer)
+library(leaflet)
+library(rgdal)
 
 
 
+plotmap <- function() {
+  map_tiles <- "/world_shape_file/"
+  
+  world_spdf <- readOGR( 
+    dsn= paste0(getwd(),map_tiles), 
+    layer="TM_WORLD_BORDERS_SIMPL-0.3",
+    verbose=FALSE
+  )
+  
+  world_spdf@data$POP2005[ which(world_spdf@data$POP2005 == 0)] = NA
+  world_spdf@data$POP2005 <- as.numeric(as.character(world_spdf@data$POP2005)) / 1000000 %>% round(2)
+  
+  # Create a color palette for the map:
+  mypalette <- colorNumeric( palette="viridis", domain=world_spdf@data$POP2005, na.color="transparent")
+  mypalette(c(45,43))
+  
+  m <- leaflet(world_spdf) %>% 
+    addTiles()  %>% 
+    setView( lat=10, lng=0 , zoom=2) %>%
+    addPolygons( fillColor = ~mypalette(POP2005), stroke=FALSE )
+}
+##########
+total_d_country <- final_df %>% 
+  group_by(country_name,Cause_Specifics, iso3) %>%
+  summarise(total = sum(Deaths1))
 
-
-
+map_disease <- function(caus) {
+  df_to_map <- filter(total_d_country, Cause_Specifics == caus)
+  try <- left_join(world_spdf@data, df_to_map, by = c("ISO3" = "iso3"))
+  try$total[is.na(try$total)] <- 0
+  
+  bin <- sum(df_to_map$total)
+  
+  mybins <- c(0,10000,20000,50000,100000,300000,Inf)
+  mypalette <- colorBin(palette="YlOrBr", domain=try$total, na.color="transparent", bins=mybins)
+  
+  mytext <- paste(
+      "Country: ", try$NAME,"<br/>", 
+      "Total Death: ", try$total, "<br/>") %>%
+    lapply(htmltools::HTML)
+  
+  leaflet(world_spdf) %>% 
+    addTiles()  %>% 
+    setView( lat=10, lng=0 , zoom=2) %>%
+    addPolygons( 
+      fillColor = ~mypalette(try$total), 
+      stroke=TRUE, 
+      fillOpacity = 0.9, 
+      color="white", 
+      weight=0.3,
+      label = mytext,
+      labelOptions = labelOptions( 
+        style = list("font-weight" = "normal", padding = "3px 8px"), 
+        textsize = "13px", 
+        direction = "auto"
+      )
+    ) %>%
+    addLegend(pal=mypalette, values=try$total, opacity=0.9, title = caus, position = "bottomleft" )
+  }
 ```
 
+```{R}
+try <- sqldf("select * from temp df1
+        left join df_to_map df2
+        on df1.ISO3 == df2.iso3 
+        ")
+
+try <- merge(temp, df_to_map, by.x=c("ISO3"), by.y=c("iso3"), all.x = TRUE)
+try$total[is.na(try$total)] <- 0
+
+try <- inner_join(temp, df_to_map)
+
+df_to_map <- filter(total_d_country, Cause_Specifics == "Heart failure")
+
+total_d_country[total_d_country$country_name == "Brazil",]
+
+map_disease("Heart failure")
+```
