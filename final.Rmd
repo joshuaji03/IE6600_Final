@@ -14,6 +14,16 @@ library(sqldf)
 ```
 
 ```{R}
+FinalData_top_100 <- df %>% 
+  group_by("Cause_Specifics") %>%
+  summarise(sum(Deaths1))
+
+
+#FinalData_top_100 <- aggregate(df$Deaths1, list(df$Cause_Specifics), FUN=sum)
+```
+
+
+```{R}
 # upload morality data
 df_1 <- read_csv('Data/Morticd10_part1.csv')
 df_2 <- read_csv('Data/Morticd10_part2.csv')
