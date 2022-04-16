@@ -14,58 +14,42 @@ cname <- sort(c(unique(final_df$country_name)))
 cause <- sort(c(unique(final_df$Cause_Specifics)))
 
 ui <- fluidPage(titlePanel("Group 7 Project"),
-                sidebarLayout(
-                  sidebarPanel(
-                    width = 4,
-                    helpText("Visulization based on WHO dataset"),
-                    selectInput(
-                      width="100%",
-                      inputId = "Year",
-                      label="Year:",
-                      choices = year,
-                      selected = NULL
-                    ),
-#                    selectInput(
-#                      width="100%",
-#                      inputId = "Country",
-#                      label="Country:",
-#                      choices = cname,
-#                      selected = NULL
-#                    ),
-                    selectInput(
-                      width="100%",
-                      inputId = "Disease",
-                      label="Disease:",
-                      choices = cause,
-                      selected = NULL
-                    ),
-                    uiOutput("obs1"),
-                    actionButton(
-                      inputId = "reset",
-                      label = "Reset Map",
-                      icon = icon("refresh"),
-                      width = "100%"
-                    ),
-                    verbatimTextOutput("aaa")
-                  ),
+                  conditionalPanel(
+                    condition = "input.tabs == 'Map'",
+                    tags$style(
+                      HTML("
+                      #controls:hover{
+                      opacity: 1;
+                      }")),
+                    absolutePanel(id = "controls",
+                                  top = 120, 
+                                  left = 25, 
+                                  width = "75%",
+                                  height = 50,
+                                  draggable = TRUE,
+                            sidebarPanel(
+                              width = 4,
+                              helpText("Visulization based on WHO dataset"),
+                              selectInput(
+                                  width="100%",
+                                  inputId = "Disease",
+                                  label="Disease:",
+                                  choices = c("",cause),
+                                  selected = NULL),
+                            uiOutput("obs1"),
+                            plotOutput("chart",
+                                       height = 200,
+                                       width = 300)),
+                            style = "opacity: 0.75; z-index: 10;" 
+                    )),
                   mainPanel(
                     tabsetPanel(
-                      tabPanel("Plot",
-                               plotOutput(
-                                 "plotmap",
-                                 width = "150%",
-                                 height = "300px"
-                                 )),
-                      tabPanel("Map",leafletOutput("init_map")),
-                      tabPanel("Table",tableOutput("table"))
-                    ),
-                    fluidPage(fluidRow(
-                    column(6,
-                           plotOutput(
-                             "plotmap_2",
-                             width = "150%",
-                             height = "300px"
-                           ))
-                  )))
-                ))
-
+                      id = "tabs",
+                      tabPanel("Plot"),
+                      tabPanel("Map",
+                               leafletOutput("init_map", 
+                                             width = "150%",
+                                             height = 800)),
+                      tabPanel("Table")
+                    ))
+                )

@@ -204,3 +204,14 @@ total_d_country[total_d_country$country_name == "Brazil",]
 
 map_disease("Heart failure", "")
 ```
+
+```{R}
+df_to_map <- final_df %>%
+  filter(Cause_Specifics == caus) %>%
+  filter(country_name == cty) %>%
+  group_by(country_name, Year, Sex) %>%
+  summarise(      
+    total_death = sum(Deaths1, na.rm = TRUE))
+
+
+```
