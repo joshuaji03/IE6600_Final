@@ -215,3 +215,370 @@ df_to_map <- final_df %>%
 
 
 ```
+
+```{R}
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(waffle)
+library(forcats)
+library(scales)
+library(ggrepel)
+
+# Compute the position of labels
+pie_func=function(Country,Year,Causes) {
+  
+    data = final_df[final_df$country_name==Country & 
+                      final_df$Year==Year & 
+                      final_df$Cause_Specifics==Causes,] %>%
+    replace(is.na(.), 0) %>% 
+    mutate(Age0_to_14=rowSums(.[10:16])) %>% 
+    mutate(Age15_to_24=rowSums(.[17:18])) %>%
+    mutate(Age25_to_44=rowSums(.[19:22])) %>%
+    mutate(Age45_to_64=rowSums(.[23:26])) %>%
+    mutate(Age65_to_84=rowSums(.[27:30])) %>%
+    mutate(Age_Over_84=rowSums(.[31:33])) %>%
+    gather(40:45,key="age",value = "deaths",na.rm=FALSE) %>%
+    group_by(age) %>%
+    summarise(deaths = sum(deaths))
+    
+    data <- data %>%
+      mutate(prop = round((deaths / sum(deaths)*100), 2)) %>%
+      mutate(text_y = cumsum(prop)) 
+      
+    data$pop_y <- c(100 - data$prop[1]/2, 
+                    100 - data$prop[1] - data$prop[2]/2, 
+                    100 - data$prop[1] - data$prop[2] - data$prop[3]/2,
+                    100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4]/2,
+                    100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4] - data$prop[5]/2, 
+                    100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4] - data$prop[5] - data$prop[6]/2)
+    
+    ggplot(data, mapping = aes(x = "", y = prop, fill = factor(age))) +
+      geom_bar(stat = "identity") +
+        coord_polar("y", start = 0) +
+        geom_label_repel(aes(label = paste0(prop,"%"), y = pop_y), nudge_x = 0.5,
+                         show.legend = FALSE) +
+        guides(fill = guide_legend(title = "Age Group"))
+}
+
+
+pie_func("Australia",2011,"Heart failure")
+```
+
+
+```{r}
+data <- data %>%
+  mutate(prop = round((deaths / sum(deaths)*100), 2)) %>%
+  mutate(text_y = cumsum(prop)) 
+  
+data$pop_y <- c(100 - data$prop[1]/2, 
+                100 - data$prop[1] - data$prop[2]/2, 
+                100 - data$prop[1] - data$prop[2] - data$prop[3]/2,
+                100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4]/2,
+                100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4] - data$prop[5]/2, 
+                100 - data$prop[1] - data$prop[2] - data$prop[3] - data$prop[4] - data$prop[5] - data$prop[6]/2)
+
+ggplot(data, mapping = aes(x = "", y = prop, fill = factor(age))) +
+  geom_bar(stat = "identity") +
+    coord_polar("y", start = 0) +
+    geom_label_repel(aes(label = prop, y = pop_y), nudge_x = 0.5,
+                     show.legend = FALSE) +
+    guides(fill = guide_legend(title = "Age Group"))
+  #waffle(x/100, rows=5, size=0.6, 
+  #   colors=c("#44D2AC", "#E48B8B", "#B67093", 
+  #              "#3A9ABD", "#CFE252", "#CFE222"), 
+  #   title="Age Groups bifurcation",
+  #   xlab="1 square = 1000 persons")
+      #ggthemes::scale_fill_tableau(name=NULL)
+    
+
+
+
+
+
+
+
+```
+
+
+
+```{R}
+install.packages("d3Tree") 
+install.packages("treemap")
+install.packages("d3treeR")
+library(d3Tree)
+library(treemap)
+
+p = final_df %>%
+  replace(is.na(.), 0) %>% 
+  mutate(Age0_to_14=rowSums(.[10:16])) %>% 
+  mutate(Age15_to_24=rowSums(.[17:18])) %>%
+  mutate(Age25_to_44=rowSums(.[19:22])) %>%
+  mutate(Age45_to_64=rowSums(.[23:26])) %>%
+  mutate(Age65_to_84=rowSums(.[27:30])) %>%
+  mutate(Age_Over_84=rowSums(.[31:33])) %>%
+  gather(40:45,key="age",value = "deaths",na.rm=FALSE) %>%
+  group_by(country_name, Cause_Specifics) %>%
+  summarise(deaths = sum(deaths))
+temp <- final_df %>%
+  group_by(country_name, Cause_Specifics) %>%
+  summarise(deaths = sum(Deaths1))
+t <- sqldf("SELECT * 
+          FROM p df1, temp df2
+          WHERE df1.country_name = df2.country_name AND
+          df1.Cause_Specifics = df2.Cause_Specifics" )
+
+t <- t[-c(4,5)]
+names(t)[4] <- paste("total_death")
+
+t <- t %>% 
+  group_by(country_name) %>% 
+  mutate(counter = row_number(country_name))
+
+try <- treemap(t,
+            index=c("country_name","Cause_Specifics"),
+            vSize="deaths",
+            type="index",
+            palette = "Set2",
+            bg.labels=c("white"),
+            align.labels=list(
+              c("center", "center"), 
+              c("right", "bottom")
+            )  
+          ) 
+
+try <- d3tree(
+  t,
+  name = c("country_name","Cause_Specifics"),
+  value = "deaths",
+  direction = "horizontal",
+  activeReturn = NULL,
+  width = NULL,
+  height = NULL,
+  elementId = NULL
+)
+
+try <- d3tree(
+  t,
+  name = c("country_name","Cause_Specifics"),
+  value = "deaths",
+  direction = "horizontal"
+)
+#  treemap(t,
+#            index=c("country_name","Cause_Specifics"),
+#            vSize="deaths",
+#            vColor="deaths",
+#            type="value",
+#            palette="-RdGy",
+#            bg.labels=c("white"),
+#            align.labels=list(
+#              c("center", "center"), 
+#              c("right", "bottom")
+#            )
+#            )
+#)
+
+df1 = read.csv('https://raw.githubusercontent.com/plotly/datasets/718417069ead87650b90472464c7565dc8c2cb1c/sunburst-coffee-flavors-complete.csv')
+df2 = read.csv('https://raw.githubusercontent.com/plotly/datasets/718417069ead87650b90472464c7565dc8c2cb1c/coffee-flavors.csv')
+
+library(plotly)
+
+labels = c("Australia", unique(t$Cause_Specifics)[1:5])
+parents = c("","Australia","Australia","Australia","Australia","Australia")
+values = c("",1:5)
+
+fig <- plot_ly(
+  type="treemap",
+  #ids=unique(t$country_name),
+  labels = labels,
+  parents = parents,
+  values = values
+  #domain = list(column=0)
+)
+
+
+  #Top 10 Diseases from selected country
+  #values = c("", t$total,t_death)
+  #top_5 <- final_df %>%
+  #  filter(country_name == cty)  %>%
+  #  group_by(Cause_Specifics) %>%
+  #  summarise(
+  #    total = sum(Deaths1)
+  #    ) %>%
+  #  top_n(n = 10, wt = total)
+  #t_death <- top_5$total
+  #top_5 <- top_5$Cause_Specifics
+  #t <- t[t$Cause_Specifics %in% c(top_5), ]
+  #age <- unique(t$age)
+  #count <- rep(cty, 10)
+  #space <- rep("",10)
+  #labels = c(cty, t$age, unique(t$Cause_Specifics))
+  #parents = c("", t$Cause_Specifics, count)
+  #values = c("", t$total,t_death)
+  
+
+t1 = help_find("Anguilla", "Alzheimer's disease")
+
+
+help_find <- function(cty, caus) {
+    t <- final_df %>%
+    filter(country_name == cty)  %>%
+      replace(is.na(.), 0) %>% 
+      mutate(Age0_to_14=rowSums(.[10:16])) %>% 
+      mutate(Age15_to_24=rowSums(.[17:18])) %>%
+      mutate(Age25_to_44=rowSums(.[19:22])) %>%
+      mutate(Age45_to_64=rowSums(.[23:26])) %>%
+      mutate(Age65_to_84=rowSums(.[27:30])) %>%
+      mutate(Age_Over_84=rowSums(.[31:33])) %>%
+      gather(40:45,key="age",value = "deaths",na.rm=FALSE) %>%
+      group_by(Cause_Specifics, Sex, age) %>%
+      summarise(
+        total = sum(deaths)
+      ) %>% 
+    filter(Cause_Specifics == caus)
+    
+    t <- head(t, 12)
+    
+    return (t)
+}
+
+help_look <- function(cty, df, caus) {
+  id_1 <- paste0(cty,"-",caus)
+  age_tags <- c()
+  male_tags <- c()
+  female_tags <- c()
+  
+  for (i in 1:6) {
+    tag <- paste0(id_1,"-",unique(df$age)[i])
+    age_tags[i] <- tag
+    male_tags[i] <- paste0(tag,"-","male")
+    female_tags[i] <- paste0(tag,"-","female")
+   }
+  count <- rep(tolower(cty), 6)
+  id = c("main",tolower(cty),age_tags,male_tags,female_tags)
+  labels = c("Main",cty, unique(df$age), df$Sex)
+  parents = c("", "main",count, age_tags,age_tags) 
+  
+  look <- data.frame(id, labels, parents)
+  return (look)
+}
+
+
+plot_tree <- function(cty1, cty2, caus) {
+  t1 = help_find(cty1, caus)
+  t2 = help_find(cty2, caus)
+  
+  t1$Sex[t1$Sex == 1] <- "Male"
+  t1$Sex[t1$Sex == 2] <- "Female"
+  death_by_age_1 <- t1 %>% group_by(age) %>% summarise(total = sum(total))
+  
+  t2$Sex[t2$Sex == 1] <- "Male"
+  t2$Sex[t2$Sex == 2] <- "Female"
+  death_by_age_2 <- t2 %>% group_by(age) %>% summarise(total = sum(total))
+  
+  look1 <- help_look(cty1, t1, caus)
+  look2 <- help_look(cty2, t2, caus)
+  look2 <- look2[-1,]
+  sum1 <- sum(death_by_age_1$total)
+  sum2 <- sum(death_by_age_2$total)
+
+  id <- c(look1$id,look2$id)
+  label <- c(look1$labels,look2$labels)
+  parent <- c(look1$parents,look2$parents)
+  values <- c("",sum1, death_by_age_1$total, t1$total,
+              sum2, death_by_age_2$total, t2$total)
+  plot_ly(
+    type="treemap",
+    ids=id,
+    labels = label,
+    parents = parent,
+    values = values,
+    marker=list(colorscale='Reds')
+    ) %>%
+    layout(grid=list(columns=1, rows=1))
+}
+
+plot_tree(cty1, cty2, caus)
+```
+
+```{R}
+library(shiny)
+library(tidyverse)
+library(plotly)
+library(DT)
+library(shinyWidgets)
+library(RColorBrewer)
+library(leaflet)
+library(rgdal)
+library(grid)
+library(ggnewscale)
+library(ggtext)
+library(shadowtext)
+library(patchwork)
+library(scales)
+library(ggrepel)
+library(waffle)
+library(forcats)
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+LineGraphComparison=function(Country1,Country2,Cause){
+  test=final_df[final_df$country_name==Country1 & final_df$Cause_Specifics==Cause,]
+  test=test %>% group_by(country_name,Year) %>%
+    summarise(count=sum(Deaths1))
+  test1=final_df[final_df$country_name==Country2 & final_df$Cause_Specifics==Cause,]
+  test1=test1 %>% group_by(country_name,Year) %>%
+    summarise(count=sum(Deaths1))
+  test$type=Country1
+  test1$type=Country2
+  graphdata=rbind(test,test1)
+  ggplot(graphdata,mapping=aes(x=Year,y=count))+geom_line(mapping=aes(color=type),size=2.4) +   geom_point(
+    aes(fill = type), size = 5, pch = 21,color = "white", stroke = 1)+scale_y_continuous(labels = scales::comma) +
+    theme(panel.background = element_rect(fill = "white"),panel.grid = element_blank(),
+          panel.grid.major.y = element_line(color = "#A8BAC4", size = 0.3),
+          axis.ticks.length.y = unit(0, "mm"), 
+          axis.ticks.length.x = unit(2, "mm"),
+          axis.title = element_blank(),
+          axis.line.x.bottom = element_line(color = "black"),
+          axis.text.x = element_text(family = "Econ Sans Cnd", size = 16),
+          axis.text.y = element_text(family = "Econ Sans Cnd", size = 10)) +
+    new_scale_color() + 
+    labs(title = paste(Country1,'vs',Country2,'Total Deaths on',Cause)) + 
+    theme(
+      plot.title = element_markdown(
+        family = "Econ Sans Cnd", 
+        size = 13
+      )
+    ) 
+}
+
+
+LineGraphComparison("Australia", "United States of America","Heart failure")
+
+
+```
+
+
+
+
+```{R}
+Top5Cause <- function(Country,Year){
+  test=final_df[final_df$country_name==Country & final_df$Year==Year,]
+  test=test %>% group_by(country_name,Year,Cause_Specifics) %>%
+    summarise(count=sum(Deaths1))
+  test %>% arrange(desc(count)) %>% slice(1:5) %>% ggplot(.,aes(x=reorder(Cause_Specifics,count),y=count,fill=count)) + 
+    geom_bar(stat='identity') +scale_y_continuous(labels=comma) + scale_fill_distiller(palette = "Reds", guide = FALSE, direction = 1) +
+    coord_flip()+ggtitle( paste('Top 5 Death Cause','in the',Country,'in',Year))+
+    theme(legend.position="none",axis.title=element_blank(),panel.background = element_rect(fill = "transparent"),plot.background = element_rect(fill = "transparent"),
+          panel.grid = element_blank(),plot.title=element_text(hjust=0,size=12),plot.title.position = "plot") +
+    theme_tufte()
+  }
+
+Top5Cause("Australia", "2018")
+
+
+
+
+
+```
