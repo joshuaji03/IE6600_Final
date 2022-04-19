@@ -6,6 +6,7 @@ library(shinyWidgets)
 library(RColorBrewer)
 library(leaflet)
 library(rgdal)
+library(shinyjs)
 
 final_df <- read_csv('/Users/yixuanji/Desktop/Northeastern/IE\ 6600/IE6600_Final/Data/final_df.csv')
 year <- sort(c(unique(final_df$Year)), decreasing = TRUE)
@@ -24,15 +25,16 @@ sidebarPanel2 <- function (..., out = NULL, width = 4)
 
 ui <- fluidPage(
   setBackgroundColor(
-    color = c("#F2E5D9", "#A18167"),
+    color = c("#F2F1F0", "#D9E8F3"),
     gradient = "linear",
     direction = "bottom"
   ),
   titlePanel(
     fluidRow(
-    column(9, h1("WHO Mortality Visualization")), 
-    column(8, h3("WHO Mortality Visualization")),
-    column(2, img(height = 175, width = 300,src=paste0(round(runif(1, min=1, max=3)),".png")),
+    column(9, h1("Mortality Visualization by Top 30 Most Lethal Diseases")), 
+    column(8, h4("A data visualization panel that projects the mortality dataset from WHO")),
+    column(7, h6("Created by WHYS (the og Mochi Comet :)): Hans Huray, Luyao Xu, Joshua Ji, Gaohaonan He")),
+    column(4, img(height = 150, width = 350,src="img.png"),
            align = 'right')
     )
   ),
@@ -44,7 +46,7 @@ ui <- fluidPage(
                       opacity: 1;
                       }")),
                     absolutePanel(id = "controls",
-                                  top = 320, 
+                                  top = 350, 
                                   left = 25, 
                                   width = "75%",
                                   height = 50,
@@ -70,8 +72,10 @@ ui <- fluidPage(
                       tabPanel(
                         "Plot",
                         sidebarLayout(
-                          sidebarPanel2(fluid=FALSE,width = 4,
-                                      helpText("Visulization based on WHO dataset"),
+                          sidebarPanel2(
+                            shinyjs::useShinyjs(),
+                            fluid=FALSE,width = 4,
+                                      helpText("Choose country, year and disease of interest to see magic happen"),
                                       selectInput(
                                         width="100%",
                                         inputId = "Country",

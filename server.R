@@ -19,6 +19,7 @@ library(ggplot2)
 library(dplyr)
 library(extrafont)
 library(ggthemes)
+library(RColorBrewer)
 
 total_d_country <- final_df %>% 
   group_by(country_name,Cause_Specifics, iso3) %>%
@@ -120,7 +121,10 @@ Top5Cause <- function(Country,Year){
     coord_flip()+ggtitle( paste('Top 5 Death Cause','in the',Country,'in',Year))+
     theme(legend.position="none",axis.title=element_blank(),panel.background = element_rect(fill = "transparent"),plot.background = element_rect(fill = "transparent"),
           panel.grid = element_blank(),plot.title=element_text(hjust=0,size=12),plot.title.position = "plot") +
-    theme_tufte()
+    theme_tufte() +
+    theme(
+      axis.title=element_blank(),
+      plot.title.position = "plot")
   }
 
 LineGraph <- function(Country,Cause){
@@ -275,8 +279,7 @@ plot_tree <- function(cty1, cty2, caus) {
     labels = label,
     parents = parent,
     values = values,
-    marker=list(colorscale=("Cyans"))) %>%  #c("#e34234","#b76760","#98757d","#60b0b7","#43c9d4")
-    #layout(grid=list(columns=1, rows=1)) %>%
+    marker=list(colorscale=("Pastel1"))) %>%
     layout(paper_bgcolor='transparent') %>%
     layout(autosize = F, width = 920, height = 500)
 }
@@ -514,6 +517,11 @@ server <- function(input, output) {
     })
   )
   
+  observeEvent(input$reset, {
+    shinyjs::reset("Country")
+    shinyjs::reset("year")
+    shinyjs::reset("d_choice")
+  })
 
   
   output$aaa <- renderPrint({
