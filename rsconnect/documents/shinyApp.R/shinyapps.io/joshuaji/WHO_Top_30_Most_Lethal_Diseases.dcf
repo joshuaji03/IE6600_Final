@@ -1,0 +1,13 @@
+name: WHO_Top_30_Most_Lethal_Diseases
+title: WHO_Top_30_Most_Lethal_Diseases
+username:
+account: joshuaji
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6189402
+bundleId: 5845206
+url: https://joshuaji.shinyapps.io/WHO_Top_30_Most_Lethal_Diseases/
+when: 1651113659.54738
+lastSyncTime: 1651113659.5474
+asMultiple: FALSE
+asStatic: FALSE

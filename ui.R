@@ -8,7 +8,7 @@ library(leaflet)
 library(rgdal)
 library(shinyjs)
 
-final_df <- read_csv('/Users/yixuanji/Desktop/Northeastern/IE\ 6600/IE6600_Final/Data/final_df.csv')
+final_df <- read_csv('Data/final_df.csv')
 year <- sort(c(unique(final_df$Year)), decreasing = TRUE)
 cname <- sort(c(unique(final_df$country_name)))
 cause <- sort(c(unique(final_df$Cause_Specifics)))
